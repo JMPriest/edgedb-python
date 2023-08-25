@@ -632,7 +632,7 @@ cdef class SansIOProtocol:
                 else:
                     return ret
 
-    async def dump(self, header_callback, block_callback):
+    async def dump(self, header_callback, block_callback, included_modules = None):
         cdef:
             WriteBuffer buf
             char mtype
@@ -641,7 +641,13 @@ cdef class SansIOProtocol:
         self.reset_status()
 
         buf = WriteBuffer.new_message(DUMP_MSG)
-        buf.write_int16(0)  # no headers
+        if included_modules is not None:
+            module_count = len(included_modules)
+            buf.write_int16(module_count)
+            for mod in included_modules:
+                buf.write_len_prefixed_bytes(mod.encode())
+        else:
+            buf.write_int16(0)  # no headers
         buf.end_message()
         buf.write_bytes(SYNC_MESSAGE)
         self.write(buf)
