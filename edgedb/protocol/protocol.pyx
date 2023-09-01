@@ -740,7 +740,7 @@ cdef class SansIOProtocol:
         if exc is not None:
             raise exc
 
-    async def restore(self, bytes header, data_gen, module_map: Dict[str, str] = None):
+    async def restore(self, bytes header, data_gen, module_map: typing.Dict[str, str] = None):
         cdef:
             WriteBuffer buf
             char mtype
