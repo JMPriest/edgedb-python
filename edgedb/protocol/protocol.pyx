@@ -740,7 +740,7 @@ cdef class SansIOProtocol:
         if exc is not None:
             raise exc
 
-    async def restore(self, bytes header, data_gen):
+    async def restore(self, bytes header, data_gen, module_map: Dict[str, str] = None):
         cdef:
             WriteBuffer buf
             char mtype
@@ -749,7 +749,14 @@ cdef class SansIOProtocol:
         self.reset_status()
 
         buf = WriteBuffer.new_message(RESTORE_MSG)
-        buf.write_int16(0)  # no headers
+        if module_map:
+            num_fields = len(module_map)
+            buf.write_int16(num_fields)
+            for k, v in module_map.items():
+                buf.write_len_prefixed_bytes(k.encode())
+                buf.write_len_prefixed_bytes(v.encode())
+        else:
+            buf.write_int16(0)  # no headers
         buf.write_int16(1)  # -j level
         buf.write_bytes(header)
         buf.end_message()
